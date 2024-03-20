@@ -2,9 +2,9 @@
 
 MagicNeRF is a user-friendly and high-performance implementation of neural radiance fields (NeRF), a cutting-edge technique for synthesizing photorealistic 3D scenes from 2D images.
 
-## Why Another NeRF repository?
-
 Built with simplicity and efficiency in mind, MagicNeRF offers a seamless experience for researchers and developers looking to explore NeRF-based rendering and scene reconstruction.
+
+If you are a seasoned researcher to NeRF or want a highly robust NeRF framework, checkout [nerfstudio](https://github.com/nerfstudio-project/nerfstudio) or [nerfacc](https://github.com/nerfstudio-project/nerfacc).
 
 ## Design
 
