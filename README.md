@@ -42,69 +42,14 @@ sudo apt install colmap
 ```
 
 
-<!-- ```bash
-sudo apt-get install \
-    git \
-    cmake \
-    build-essential \
-    libboost-program-options-dev \
-    libboost-filesystem-dev \
-    libboost-graph-dev \
-    libboost-regex-dev \
-    libboost-system-dev \
-    libboost-test-dev \
-    libeigen3-dev \
-    libsuitesparse-dev \
-    libfreeimage-dev \
-    libgoogle-glog-dev \
-    libgflags-dev \
-    libglew-dev \
-    qtbase5-dev \
-    libqt5opengl5-dev \
-    libcgal-dev \
-    libcgal-qt5-dev \
-    libatlas-base-dev \
-    libsuitesparse-dev \
-    libflann-dev \
-    libsqlite3-dev \
-    libmetis-dev \
-```
-
-Install Ceres-solver
-
-```bash
-git clone https://ceres-solver.googlesource.com/ceres-solver
-cd ceres-solver
-git checkout $(git describe --tags) # Checkout the latest release
-mkdir build
-cd build
-cmake .. -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF
-make
-sudo make install
-```
-
-Install ColMap
-
-```bash
-git clone https://github.com/colmap/colmap
-cd colmap
-git checkout dev
-mkdir build
-cd build
-cmake .. -DCMAKE_CUDA_ARCHITECTURES=native
-make
-sudo make install
-CC=/usr/bin/gcc-6 CXX=/usr/bin/g++-6 cmake ..
-``` -->
-
-## Workflow
+<!-- ## Workflow
 
 1. Capture Images or Video
 2. Estimate camera intrinsics and extrinsics via Structure-from-Motion
     * Colmap (Open-source)
     * Reality Capture (Commercial, much faster)
 3. Convert to suitable input for Nerfstudio, InstantNGP, etc.
-4. Start optimizing.
+4. Start optimizing. -->
 
 ## Usage
 
@@ -117,10 +62,8 @@ bash scripts/download_data.sh
 ### Optimization
 
 ```bash
-bash run.py --config configs/lego.yaml
+bash run.py
 ```
-
-After training for 100k iterations (~4 hours on a single 2080ti), you can find the following video at.
 
 
 ### What is not implemented?

@@ -90,3 +90,61 @@ Volume bounds
 ### Training Tricks
 * For real scene data, they regularize the network by adding random Gaussian noise with zero mean and unit variance to the output $/sigma$ values (before passing them through the ReLU) during optimization, finding that this slightly improves visual performance for rendering novel views.
 * To render new views at test time, they sample 64 points per ray through the coarse network and 64+128=192 points per ray through the fine network, for a total of 256 network queries per ray.
+
+
+
+
+<!-- ```bash
+sudo apt-get install \
+    git \
+    cmake \
+    build-essential \
+    libboost-program-options-dev \
+    libboost-filesystem-dev \
+    libboost-graph-dev \
+    libboost-regex-dev \
+    libboost-system-dev \
+    libboost-test-dev \
+    libeigen3-dev \
+    libsuitesparse-dev \
+    libfreeimage-dev \
+    libgoogle-glog-dev \
+    libgflags-dev \
+    libglew-dev \
+    qtbase5-dev \
+    libqt5opengl5-dev \
+    libcgal-dev \
+    libcgal-qt5-dev \
+    libatlas-base-dev \
+    libsuitesparse-dev \
+    libflann-dev \
+    libsqlite3-dev \
+    libmetis-dev \
+```
+
+Install Ceres-solver
+
+```bash
+git clone https://ceres-solver.googlesource.com/ceres-solver
+cd ceres-solver
+git checkout $(git describe --tags) # Checkout the latest release
+mkdir build
+cd build
+cmake .. -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF
+make
+sudo make install
+```
+
+Install ColMap
+
+```bash
+git clone https://github.com/colmap/colmap
+cd colmap
+git checkout dev
+mkdir build
+cd build
+cmake .. -DCMAKE_CUDA_ARCHITECTURES=native
+make
+sudo make install
+CC=/usr/bin/gcc-6 CXX=/usr/bin/g++-6 cmake ..
+``` -->

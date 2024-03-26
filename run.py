@@ -12,7 +12,6 @@ from magicnerf.render import render_rays
 
 
 def main():
-    batch_size = 6144    # 100 views
     lr  = 5.e-4
     epochs = 16
     weight_decay = 1e-4
@@ -28,18 +27,16 @@ def main():
     bins = 192
     chunk_size = 10
     H, W = 400, 400
-    root = "./data/nerf_synthetic"
-    device = torch.device('cuda:0')
+    root = "/data4/sithu/datasets/"
+    device = torch.device('cuda:7')
+    batch_size = 2**15    # 100 views
 
-    # trainset = Blender(root, "lego", 'train', (H, W))
-    # testset = Blender(root, "lego", "test", (H, W))
-
-    trainset = torch.from_numpy(np.load("/home/sithu/datasets/llff/training_data.pkl", allow_pickle=True))
-    testset = torch.from_numpy(np.load("/home/sithu/datasets/llff/testing_data.pkl", allow_pickle=True))
+    trainset = Blender(root, "lego", 'train', (H, W))
+    testset = Blender(root, "lego", "test", (H, W))
 
     train_loader = DataLoader(trainset, batch_size, shuffle=True)
-    # near, far = trainset.near, trainset.far
-    near, far = 2, 6
+    test_loader = DataLoader(testset, H*W, shuffle=False)
+    near, far = trainset.near, trainset.far
 
     model = MLP().to(device)
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -47,15 +44,11 @@ def main():
 
     losses = []
     for epoch in range(epochs):
-        for batch in train_loader:
-            rays_o = batch[:, :3].to(device)
-            rays_d = batch[:, 3:6].to(device)
-            rgbs = batch[:, 6:].to(device)
-            # rgbs = rgbs.view(-1, 3)
-            # rays = rays.view(-1, 6)
-            # rays_o = rays[:, :3].to(device)
-            # rays_d = rays[:, 3:6].to(device)
-            # rgbs = rgbs.to(device)
+        for rgbs, rays in train_loader:
+
+            rgbs = rgbs.to(device)
+            rays_o = rays[:, :3].to(device)
+            rays_d = rays[:, 3:6].to(device)
             
             rendered_rgbs = render_rays(model, rays_o, rays_d, near, far, bins)
             loss = ((rgbs - rendered_rgbs) ** 2).sum()
@@ -68,16 +61,12 @@ def main():
         print(f"Epochs: {epoch+1}/{epochs}\tLoss: {sum(losses) / len(losses):.2f}")
         scheduler.step()
 
-        for index in range(10):
-            batch = testset[index]
-            # rgbs = rgbs.view(-1, 3)
-            # rays = rays.view(-1, 6)
-            # rgbs = rgbs.to(device)
-            # rays_o = rays[:, :3].to(device)
-            # rays_d = rays[:, 3:6].to(device)
-            rays_o = batch[:, :3].to(device)
-            rays_d = batch[:, 3:6].to(device)
-            rgbs = batch[:, 6:].to(device)
+        for index, (rgbs, rays) in enumerate(test_loader):
+            if index == 10:
+                break
+            rgbs = rgbs.to(device)
+            rays_o = rays[:, :3].to(device)
+            rays_d = rays[:, 3:6].to(device)
 
             data = []   # list of rendered images
             # iterate over chunks
