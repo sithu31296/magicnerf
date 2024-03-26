@@ -143,6 +143,5 @@ if __name__ == '__main__':
     from torch.utils.data import DataLoader
     dataset = Blender("/data4/sithu/datasets/", "lego", "test")
     dataloader = DataLoader(dataset, 100)
-
     rgbs, rays = next(iter(dataloader))
     print(rays.shape)

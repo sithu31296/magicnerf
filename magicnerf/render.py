@@ -108,9 +108,6 @@ def sample_pdf(bins, weights, n_importance, det=False):
 #     sigma = rgbsigma[:, 3]                                                  # (n_rays, n_samples)
 
 
-
-
-
 def compute_accumulated_transmittance(alphas):
     accumulated_transmittance = torch.cumprod(alphas, 1)
     return torch.cat([torch.ones([accumulated_transmittance.shape[0], 1], device=alphas.device), accumulated_transmittance[:, :-1]], dim=-1)

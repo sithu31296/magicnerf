@@ -62,8 +62,15 @@ bash scripts/download_data.sh
 ### Optimization
 
 ```bash
-bash run.py
+python run.py
 ```
+
+### Results
+
+Model | MLP dim | Image Size | Samples | N_rays | PSNR | SSIM
+--- | --- | --- | --- | --- | --- | ---
+Original | 256 | 800x800 | 192 | 2**15 | - | -
+Original | 128 | 400x400 | 192 | 2**15 | - | -
 
 
 ### What is not implemented?

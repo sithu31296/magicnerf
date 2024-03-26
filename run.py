@@ -16,14 +16,6 @@ def main():
     epochs = 16
     weight_decay = 1e-4
 
-    half_res = True
-    n_samples = 64
-    n_importance = 64
-    use_viewdirs = True
-    white_bg = True
-    redner_test = True
-    n_rand = 1024
-
     bins = 192
     chunk_size = 10
     H, W = 400, 400
