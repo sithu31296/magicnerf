@@ -78,3 +78,15 @@ Getting More Constraints from Monocular Cues
 * Volume density does necessarily model 3D geometry
 * Estimate SDF, model volume density as learnable function of SDF.
 
+
+### Details
+
+Volume bounds
+* We have to scale the scene so that the continuous 5D coordinates along camera rays lies within a cube of side length 2 centered at the origin, and only query the representation within this bounding volume.
+* While the dataset with real images contains content that can exist anywhere between the closest point and infinity, so you must use Normalized Device Coordinates (NDC) to map the depth range of these points into [-1, 1].
+* This shifts all the ray origins to the near plane of the scene, maps the perspective rays of the camera to parallel rays in the transformed volume, and uses disparity (inverse depth) instead of metric depth, so all coordinates are now bounded.
+
+
+### Training Tricks
+* For real scene data, they regularize the network by adding random Gaussian noise with zero mean and unit variance to the output $/sigma$ values (before passing them through the ReLU) during optimization, finding that this slightly improves visual performance for rendering novel views.
+* To render new views at test time, they sample 64 points per ray through the coarse network and 64+128=192 points per ray through the fine network, for a total of 256 network queries per ray.

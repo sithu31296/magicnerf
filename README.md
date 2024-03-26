@@ -1,6 +1,6 @@
 # MagicNeRF
 
-MagicNeRF is a user-friendly and high-performance implementation of neural radiance fields (NeRF), a cutting-edge technique for synthesizing photorealistic 3D scenes from 2D images.
+MagicNeRF is a user-friendly and high-performance implementation of neural radiance fields ([NeRF](http://www.matthewtancik.com/nerf)), a cutting-edge technique for synthesizing photorealistic 3D scenes from 2D images.
 
 Built with simplicity and efficiency in mind, MagicNeRF offers a seamless experience for researchers and developers looking to explore NeRF-based rendering and scene reconstruction.
 
@@ -30,6 +30,12 @@ Normally, a 3D scene is represented with point clouds, voxel grids or meshes.
     * Adapt the model to diverse applications and datasets.
 
 ## Installation
+
+Clone the repository and install with the following:
+
+```bash
+pip install -e .
+```
 
 ```bash
 sudo apt install colmap
@@ -100,8 +106,33 @@ CC=/usr/bin/gcc-6 CXX=/usr/bin/g++-6 cmake ..
 3. Convert to suitable input for Nerfstudio, InstantNGP, etc.
 4. Start optimizing.
 
+## Usage
+
+### Download the Data
+
+```bash
+bash scripts/download_data.sh
+```
+
+### Optimization
+
+```bash
+bash run.py --config configs/lego.yaml
+```
+
+After training for 100k iterations (~4 hours on a single 2080ti), you can find the following video at.
+
+
+### What is not implemented?
+
+* Hierarchical Volume Sampling
+
+
+
 ## References
+* [official_tensorflow_implementation](https://github.com/bmild/nerf)
 
 This code is based on the following great repositories:
-* nerf_pytorch
-* nerf_pl
+* [nerf_pytorch](https://github.com/yenchenlin/nerf-pytorch)
+* [nerf_pl](https://github.com/kwea123/nerf_pl)
+
