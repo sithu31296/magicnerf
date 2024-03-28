@@ -23,7 +23,7 @@ def main():
     weight_decay = 1e-4
 
     bins = 64
-    chunk_size = 10
+    chunk_size = 100
     H, W = 400, 400
     root = "/data4/sithu/datasets/"
     device = torch.device('cuda:7')
