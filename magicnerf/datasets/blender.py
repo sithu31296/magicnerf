@@ -82,12 +82,10 @@ class Blender(Dataset):
         self.transforms = T.ToTensor()
 
         # bounds, common for all scenes in this dataset
-        self.near = 2.0
-        self.far = 6.0
+        self.near = 2
+        self.far = 6
         self.bounds = np.array([self.near, self.far])
-
-        self.rgbs, self.poses, self.rays, self.K = self.read_data()
-        # self.render_poses = self.create_render_poses()              # (40, 4, 4)
+        self.rgbs, self.rays, = self.read_data()
 
     def read_image(self, img_path: str) -> Image:
         img = Image.open(img_path)
@@ -113,21 +111,17 @@ class Blender(Dataset):
         # ray directions for all pixels, same for all images (same H, W, K)
         dirs = get_ray_directions(h, w, K)  # (H, W, 3)
 
-        rgbs, poses, rays = [], [], []
+        rgbs, rays = [], []
         for frame in meta['frames']:
             img = self.read_image(self.root / self.scene / f"{frame['file_path']}.png")     # (640000, 3)                                    
             c2w = torch.from_numpy(np.array(frame['transform_matrix']) ).float()            # (4, 4)
             rays_o, rays_d = get_rays(dirs, c2w)                                            # (640000, 3), (640000, 3)   
-            # near = self.near * torch.ones_like(rays_o[..., :1])
-            # far = self.far * torch.ones_like(rays_o[..., :1])
             rgbs.append(img)
-            poses.append(c2w)
             rays.append(torch.cat([rays_o, rays_d], dim=-1))
         
-        rgbs = torch.stack(rgbs)    # (100, 640000, 3)
-        poses = torch.stack(poses)  # (100, 4, 4)
-        rays = torch.stack(rays)    # (100, 640000, 8)
-        return rgbs, poses, rays, K
+        rgbs = torch.cat(rgbs, 0)    # (100*640000, 3)
+        rays = torch.cat(rays, 0)    # (100*640000, 6)
+        return rgbs, rays
  
 
     def create_render_poses(self):
@@ -140,15 +134,13 @@ class Blender(Dataset):
         return len(self.rgbs)
     
     def __getitem__(self, index):
-        return self.rgbs[index], self.rays[index], self.poses[index], self.K
+        return self.rgbs[index], self.rays[index]
 
 
 
 if __name__ == '__main__':
     from torch.utils.data import DataLoader
-    dataset = Blender("./data/nerf_synthetic", "lego", "test")
-    dataloader = DataLoader(dataset, 1)
-    # rgbs, rays, poses, K = next(iter(dataloader))
-    # print(rgbs.shape, rays.shape, poses.shape, K.shape)
-    rgbs, rays, _, _ = dataset[10]
+    dataset = Blender("/data4/sithu/datasets/", "lego", "test", (800, 800))
+    dataloader = DataLoader(dataset, 100)
+    rgbs, rays = next(iter(dataloader))
     print(rays.shape)

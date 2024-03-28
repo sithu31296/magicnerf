@@ -4,11 +4,6 @@ from torch import nn, Tensor
 from torch.nn import functional as F
 
 
-img2mse = lambda x, y : torch.mean((x - y) ** 2)
-mse2psnr = lambda x : -10. * torch.log(x) / torch.log(torch.Tensor([10.]))
-to8b = lambda x : (255*np.clip(x,0,1)).astype(np.uint8)
-
-
 
 class Embedding(nn.Module):
     def __init__(self, n_freqs) -> None:
@@ -38,18 +33,18 @@ class MLP(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         # parameters
-        dim = 128
+        dim = 64
         d_pos = 3
         d_dir = 3
         pos_freq = 10
         dir_freq = 4
-        self.skip = 4   # skip connection at fifth layer
+        self.skip = 2   # skip connection at fifth layer
 
         self.pos_embed = Embedding(pos_freq)
         self.dir_embed = Embedding(dir_freq)
 
         self.pos_encoder = nn.ModuleList([])
-        for i in range(8):
+        for i in range(4):
             if i == 0:
                 input_dim = d_pos * pos_freq * 2 + 3
             elif i == self.skip:
@@ -62,14 +57,6 @@ class MLP(nn.Module):
         self.sigma = nn.Sequential(nn.Linear(dim, 1), nn.ReLU())
         self.dir_encoder = nn.Sequential(nn.Linear(dim + (d_dir * dir_freq * 2 + 3), dim//2), nn.ReLU())
         self.rgb = nn.Sequential(nn.Linear(dim//2, 3), nn.Sigmoid())
-
-    @staticmethod
-    def positional_encoding(x: Tensor, dim: int):
-        out = [x]
-        for j in range(dim):
-            out.append(torch.sin(2 ** j * x))
-            out.append(torch.cos(2 ** j * x))
-        return torch.cat(out, dim=1)
     
     def forward(self, pos: Tensor, dir: Tensor):
         # pos, dir = torch.split(x, [3, 3], dim=-1)
@@ -85,7 +72,6 @@ class MLP(nn.Module):
         feat = self.feat_encoder(pos)
         feat = self.dir_encoder(torch.cat([feat, dir], dim=-1))
         rgb = self.rgb(feat)
-        # return torch.cat([rgb, sigma], dim=-1)
         return rgb, sigma
     
 

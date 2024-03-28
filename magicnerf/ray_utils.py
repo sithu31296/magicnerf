@@ -16,8 +16,13 @@ def get_ray_directions(H, W, K):
     fx, fy = K[0, 0], K[1, 1]
     cx, cy = K[0, 2], K[1, 2]
 
+    # pixel coordinates
     i, j = torch.meshgrid(torch.linspace(0, W-1, W), torch.linspace(0, H-1, H), indexing='ij')
     i, j = i.T, j.T 
+
+    # normalize pixel coordinates
+    # this normalization centers the coordinates around the principal point and scales them by the focal length
+    # in camera coordinate system, z-coordinate is always 1, as they lie on the image plane.
     dirs = torch.stack([(i - cx) / fx, -(j - cy) / fy, -torch.ones_like(i)], dim=-1)    # (H, W, 3)
     return dirs
 
@@ -83,28 +88,39 @@ if __name__ == '__main__':
     H = W = 800
     focal = 1111
     K = torch.tensor([
-        [focal, 0, 0],
-        [0, focal, 0],
+        [focal, 0, 400],
+        [0, focal, 400],
         [0, 0, 1]
     ])
     dirs = get_ray_directions(H, W, K)
     print(dirs.shape)
+    
 
-    c2w = torch.tensor([
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-    ], dtype=torch.float32)
-    rays_o, rays_d = get_rays(dirs, c2w)
-    print(rays_o.shape, rays_d.shape)
+    # c2w = torch.tensor([
+    #     [1, 0, 0, 0],
+    #     [0, 1, 0, 0],
+    #     [0, 0, 1, 0],
+    #     [0, 0, 0, 1]
+    # ], dtype=torch.float32)
+    # rays_o, rays_d = get_rays(dirs, c2w)
+    # print(rays_o.shape, rays_d.shape)
 
-    rays_o, rays_d = get_ndc_rays(H, W, focal, 0.8, rays_o, rays_d)
-    print(rays_o.shape, rays_d.shape)
+    # rays_o, rays_d = get_ndc_rays(H, W, focal, 0.8, rays_o, rays_d)
+    # print(rays_o.shape, rays_d.shape)
 
     
     dirs2 = dirs.view(-1, 3)
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    ax.scatter(dirs[:, 0], dirs[:, 1], dirs[:, 2])
+    # ax.scatter(dirs[:, 0], dirs[:, 1], dirs[:, 2])
+    ax.quiver(0, 0, 0, dirs[:, 0], dirs[:, 1], dirs[:, 2], length=100.5)
+    ax.set_xlim([-1, 1])
+    ax.set_ylim([-1, 1])
+    ax.set_zlim([0, 1])  # Assuming camera's field of view doesn't exceed 90 degrees
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    # fig = plt.figure()
+    # plt.scatter(dirs[:, 0], dirs[:, 1])
     plt.show()

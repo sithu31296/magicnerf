@@ -8,18 +8,14 @@ If you are a seasoned researcher to NeRF or want a highly robust NeRF framework,
 
 ## Introduction
 
-### Explicit Representations
-Normally, a 3D scene is represented with point clouds, voxel grids or meshes.
+Previously, a 3D scene is represented with point clouds, voxel grids or meshes.
 
-### Implicit Representations
+NeRF uses an implicit function (MLP) to represent the 3D scene conditioned on the 5D coordinate inputs (spatial location (x, y, z) and viewing direction ($\theta$, $\phi$)).
+The output is the volume density $\sigma$ and color $c$ at that spatial location.
+The implicit function is optimized with classifical volume rendering equation with the gradients backpropagated from the photometric loss calculated between the ground-truth image and the rendered image.
 
+> Notes: The term "optimization" is typically used instead of "training" in the neural radiance field methods since the model needs to be learned per scene. 
 
-## Additional References to Read
-
-* Fourier Features let Networks Learn High Frequency Functions in Low Dimensional Domains. (NeurIPS 2020)
-* VolSDF: Volume Render of Neural Implicit Surfaces (NeurIPS 2021)
-* MonoSDF: Exploring Monocular Geometric Cues for Neural Implicit Surface Reconstruction (NeurIPS 2022)
-* Omnidata: A Scalable Pipeline for Making Multi-Task Mid-Level Vision Datasets from 3D Scans (ICCV 2021)
 
 ## Design
 
@@ -42,69 +38,14 @@ sudo apt install colmap
 ```
 
 
-<!-- ```bash
-sudo apt-get install \
-    git \
-    cmake \
-    build-essential \
-    libboost-program-options-dev \
-    libboost-filesystem-dev \
-    libboost-graph-dev \
-    libboost-regex-dev \
-    libboost-system-dev \
-    libboost-test-dev \
-    libeigen3-dev \
-    libsuitesparse-dev \
-    libfreeimage-dev \
-    libgoogle-glog-dev \
-    libgflags-dev \
-    libglew-dev \
-    qtbase5-dev \
-    libqt5opengl5-dev \
-    libcgal-dev \
-    libcgal-qt5-dev \
-    libatlas-base-dev \
-    libsuitesparse-dev \
-    libflann-dev \
-    libsqlite3-dev \
-    libmetis-dev \
-```
-
-Install Ceres-solver
-
-```bash
-git clone https://ceres-solver.googlesource.com/ceres-solver
-cd ceres-solver
-git checkout $(git describe --tags) # Checkout the latest release
-mkdir build
-cd build
-cmake .. -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF
-make
-sudo make install
-```
-
-Install ColMap
-
-```bash
-git clone https://github.com/colmap/colmap
-cd colmap
-git checkout dev
-mkdir build
-cd build
-cmake .. -DCMAKE_CUDA_ARCHITECTURES=native
-make
-sudo make install
-CC=/usr/bin/gcc-6 CXX=/usr/bin/g++-6 cmake ..
-``` -->
-
-## Workflow
+<!-- ## Workflow
 
 1. Capture Images or Video
 2. Estimate camera intrinsics and extrinsics via Structure-from-Motion
     * Colmap (Open-source)
     * Reality Capture (Commercial, much faster)
 3. Convert to suitable input for Nerfstudio, InstantNGP, etc.
-4. Start optimizing.
+4. Start optimizing. -->
 
 ## Usage
 
@@ -117,15 +58,46 @@ bash scripts/download_data.sh
 ### Optimization
 
 ```bash
-bash run.py --config configs/lego.yaml
+python run.py
 ```
 
-After training for 100k iterations (~4 hours on a single 2080ti), you can find the following video at.
+### Results
 
+> Notes: The results are tested with 8 novel views.
 
-### What is not implemented?
+Playing with Implicit Function (MLP):
+MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
+---     | ---       | ---        | ---         | ---      | ---   | ---
+32      | 6         | 400x400    | 64          | 400*400  | 18.78 | 29GB
+64      | 6         | 400x400    | 64          | 400*400  | 19.33 | 46GB
+128     | 6         | 400x400    | 64          | 400*400  | 20.02 | 76GB
+|
+64      | 4         | 400x400    | 32          | 400*400  | - | 41GB
+64      | 6         | 400x400    | 64          | 400*400  | 19.33 | 46GB
+64      | 8         | 400x400    | 128         | 400*400  | - | -
 
-* Hierarchical Volume Sampling
+Playing with Ray Samplers:
+MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
+---     | ---       | ---        | ---         | ---      | ---   | ---
+64      | 6         | 400x400    | 32          | 400*400  | 18.45 | 23GB
+64      | 6         | 400x400    | 64          | 400*400  | 19.33 | 46GB
+64      | 6         | 400x400    | 128         | 400*400  | -     | OOM
+
+Playing with Number of Rays in Training:
+MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
+---     | ---       | ---        | ---         | ---      | ---   | ---
+64      | 6         | 400x400    | 64          | 200*200  | - | -
+64      | 6         | 400x400    | 64          | 400*400  | 19.33 | 46GB
+64      | 6         | 400x400    | 64          | 600*600  | - | -
+
+Common Parameters:
+* Epochs = 16
+* LR = 5e-4
+
+Tips
+* Make a reasonable small MLP model. (small dim, reasonal number of layers)
+* Sampling algorithm makes a big impact. (comes with an increased memory cost)
+* Train with large amount of rays as much as possible. (maximum number of rays that can fit with your GPU)
 
 
 
