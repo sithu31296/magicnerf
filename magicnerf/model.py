@@ -56,30 +56,29 @@ class MLP(nn.Module):
             if i == 0:
                 input_dim = d_pos * pos_freq * 2 + 3
             elif i == self.skip:
-                input_dim = (d_pos * pos_freq * 2 + 3) + dim
+                input_dim = dim + (d_pos * pos_freq * 2 + 3)
             else:
                 input_dim = dim
-            self.pos_encoder.append(nn.Sequential(nn.Linear(input_dim, dim), nn.ReLU()))
+            self.pos_encoder.append(nn.Linear(input_dim, dim))
 
-        self.feat_encoder = nn.Linear(dim, dim)
-        self.sigma = nn.Sequential(nn.Linear(dim, 1), nn.ReLU())
-        self.dir_encoder = nn.Sequential(nn.Linear(dim + (d_dir * dir_freq * 2 + 3), dim//2), nn.ReLU())
-        self.rgb = nn.Sequential(nn.Linear(dim//2, 3), nn.Sigmoid())
+        self.sigma = nn.Linear(dim, 1)
+        self.rgb_encoder = nn.Sequential(
+            nn.Linear(dim + (d_dir * dir_freq * 2 + 3), dim//2), 
+            nn.ReLU(),
+            nn.Linear(dim//2, 3), 
+            nn.Sigmoid(),
+        )
     
     def forward(self, pos: Tensor, dir: Tensor):
-        # pos, dir = torch.split(x, [3, 3], dim=-1)
         pos, dir = self.pos_embed(pos), self.dir_embed(dir)
         residual = pos.clone()
-
         for i, layer in enumerate(self.pos_encoder):
             if i == self.skip:
                 pos = torch.cat([pos, residual], dim=-1)
-            pos = layer(pos)
+            pos = F.relu(layer(pos))
             
-        sigma = self.sigma(pos)
-        feat = self.feat_encoder(pos)
-        feat = self.dir_encoder(torch.cat([feat, dir], dim=-1))
-        rgb = self.rgb(feat)
+        sigma = F.relu(self.sigma(pos))
+        rgb = self.rgb_encoder(torch.cat([pos, dir], dim=-1))
         return rgb, sigma
     
 
@@ -89,6 +88,7 @@ if __name__ == '__main__':
     bs = 100
     model = MLP()
     x = torch.randn(bs, d_pos+d_dir)
+    # pos, dir = torch.split(x, [3, 3], dim=-1)
 
     y = model(x)
     print(y.shape)

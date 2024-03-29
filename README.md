@@ -99,6 +99,13 @@ MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
 64      | 6         | 400x400    | 64          | 400*400  | 19.33 | 46GB
 64      | 6         | 400x400    | 64          | 600*600  | -     | OOM
 
+Optimal Model
+MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
+---     | ---       | ---        | ---         | ---      | ---   | ---
+32 (no skip) | 4    | 400x400    | 64          | 100*100  | 19.89 | 1.7GB
+32      | 4         | 400x400    | 64          | 100*100  | 20.17 | 2.2GB
+32 (w/o hidden encoder) | 4 | 400x400 | 64     | 100*100  | 20.40 | 2.1GB
+
 Common Parameters:
 * Epochs = 16
 * LR = 5e-4
