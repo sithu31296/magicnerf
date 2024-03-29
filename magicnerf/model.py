@@ -30,15 +30,23 @@ class Embedding(nn.Module):
 
 
 class MLP(nn.Module):
+    """Reasonable MLP 
+
+    dim = 32
+    three hidden layers
+    sigmoid function to regularize the sigma to [0, 1] (since extracting scene geometry from the raw density requires carful tuning of the density thresold
+    and leads to artifacts due to the ambiguity present in the density field). 
+    in this case, a fixed level set of 0.5 could be used to extract the mesh
+    """
     def __init__(self) -> None:
         super().__init__()
         # parameters
-        dim = 64
+        dim = 32    
         d_pos = 3
         d_dir = 3
         pos_freq = 10
         dir_freq = 4
-        self.skip = 2   # skip connection at fifth layer
+        self.skip = 2   # (8, 4), (6, 4), (4, 2)
 
         self.pos_embed = Embedding(pos_freq)
         self.dir_embed = Embedding(dir_freq)

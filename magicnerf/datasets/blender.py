@@ -92,6 +92,7 @@ class Blender(Dataset):
         img = img.resize(self.size, Image.Resampling.LANCZOS)
         img = self.transforms(img)  # (4, 800, 800) # RGBA
         img = img.view(4, -1).T     # (800*800, 4)  
+        # white background
         img = img[:, :3] * img[:, -1:] + (1 - img[:, -1:])  # blend A to RGB
         return img
 

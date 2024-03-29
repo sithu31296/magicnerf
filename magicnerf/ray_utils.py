@@ -4,6 +4,22 @@ import matplotlib.pyplot as plt
 
 
 
+def sample_grid2d(H, W, N):
+    """Sample pixels in an HxW mesh grid
+    Args:
+        H, W, K : image height, image width, num_samples
+    """
+    if N > H*W:
+        N = H*W
+    coords = torch.stack(torch.meshgrid(torch.linspace(0, H-1, H), torch.linspace(0, W-1, W)), dim=-1)
+    coords = coords.reshape(-1, 2)  # (H*W, 2)
+
+    # sample N pixels in the mesh grid
+    select_inds = np.random.choice(coords.shape[0], size=[N], replace=False)    # (N, 2)
+    select_coords = coords[select_inds].long()
+    return select_coords
+
+
 def get_ray_directions(H, W, K):
     """Get ray directions for all pixels in camera coordinate
     Reference: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/standard-coordinate-systems
@@ -20,8 +36,7 @@ def get_ray_directions(H, W, K):
     i, j = torch.meshgrid(torch.linspace(0, W-1, W), torch.linspace(0, H-1, H), indexing='ij')
     i, j = i.T, j.T 
 
-    # normalize pixel coordinates
-    # this normalization centers the coordinates around the principal point and scales them by the focal length
+    # centers the coordinates around the principal point and scales them by the focal length
     # in camera coordinate system, z-coordinate is always 1, as they lie on the image plane.
     dirs = torch.stack([(i - cx) / fx, -(j - cy) / fy, -torch.ones_like(i)], dim=-1)    # (H, W, 3)
     return dirs
@@ -38,10 +53,11 @@ def get_rays(dirs, c2w):
     """
     # rotate ray directions from camera coordinate to world coordinate
     rays_d = dirs @ c2w[:3, :3].T    # (H, W, 3)
-    rays_d = rays_d / torch.norm(rays_d, dim=-1, keepdim=True)
-
     # the origin of all rays is the camera origin in world coordinate
     rays_o = c2w[:3, -1].expand(rays_d.shape)
+
+    # normalize ray directions
+    rays_d = rays_d / torch.norm(rays_d, dim=-1, keepdim=True)
     return rays_o.view(-1, 3), rays_d.view(-1, 3)
 
 
@@ -96,31 +112,31 @@ if __name__ == '__main__':
     print(dirs.shape)
     
 
-    # c2w = torch.tensor([
-    #     [1, 0, 0, 0],
-    #     [0, 1, 0, 0],
-    #     [0, 0, 1, 0],
-    #     [0, 0, 0, 1]
-    # ], dtype=torch.float32)
-    # rays_o, rays_d = get_rays(dirs, c2w)
-    # print(rays_o.shape, rays_d.shape)
+    c2w = torch.tensor([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+    ], dtype=torch.float32)
+    rays_o, rays_d = get_rays(dirs, c2w)
+    print(rays_o.shape, rays_d.shape)
 
     # rays_o, rays_d = get_ndc_rays(H, W, focal, 0.8, rays_o, rays_d)
     # print(rays_o.shape, rays_d.shape)
 
     
-    dirs2 = dirs.view(-1, 3)
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    # ax.scatter(dirs[:, 0], dirs[:, 1], dirs[:, 2])
-    ax.quiver(0, 0, 0, dirs[:, 0], dirs[:, 1], dirs[:, 2], length=100.5)
-    ax.set_xlim([-1, 1])
-    ax.set_ylim([-1, 1])
-    ax.set_zlim([0, 1])  # Assuming camera's field of view doesn't exceed 90 degrees
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
+    # dirs2 = dirs.view(-1, 3)
     # fig = plt.figure()
-    # plt.scatter(dirs[:, 0], dirs[:, 1])
-    plt.show()
+    # ax = fig.add_subplot(projection='3d')
+    # # ax.scatter(dirs[:, 0], dirs[:, 1], dirs[:, 2])
+    # ax.quiver(0, 0, 0, dirs[:, 0], dirs[:, 1], dirs[:, 2], length=100.5)
+    # ax.set_xlim([-1, 1])
+    # ax.set_ylim([-1, 1])
+    # ax.set_zlim([0, 1])  # Assuming camera's field of view doesn't exceed 90 degrees
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+
+    # # fig = plt.figure()
+    # # plt.scatter(dirs[:, 0], dirs[:, 1])
+    # plt.show()

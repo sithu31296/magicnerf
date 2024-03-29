@@ -27,7 +27,7 @@ def main():
     H, W = 400, 400
     root = "/data4/sithu/datasets/"
     device = torch.device('cuda:7')
-    batch_size = H*W    
+    batch_size = 100*100
 
     trainset = Blender(root, "lego", 'train', (H, W))
     testset = Blender(root, "lego", "test", (H, W))

@@ -16,6 +16,12 @@ The implicit function is optimized with classifical volume rendering equation wi
 
 > Notes: The term "optimization" is typically used instead of "training" in the neural radiance field methods since the model needs to be learned per scene. 
 
+How can I use the NeRF technique?
+* 3D reconstruction.
+* Novel view synthesis (generating novel views from the learned implicit function.)
+* Occupancy prediction (free-space modelling)
+
+
 
 ## Design
 
@@ -72,9 +78,9 @@ MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
 64      | 6         | 400x400    | 64          | 400*400  | 19.33 | 46GB
 128     | 6         | 400x400    | 64          | 400*400  | 20.02 | 76GB
 ||
-64      | 4         | 400x400    | 32          | 400*400  | - | 41GB
+64      | 4         | 400x400    | 64          | 400*400  | 19.07 | 41GB
 64      | 6         | 400x400    | 64          | 400*400  | 19.33 | 46GB
-64      | 8         | 400x400    | 128         | 400*400  | - | -
+64      | 8         | 400x400    | 64          | 400*400  | 19.29 | 51GB
 
 Playing with Ray Samplers:
 MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
@@ -86,18 +92,22 @@ MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
 Playing with Number of Rays in Training:
 MLP dim | num_layers| Image Size | num_samples | num_rays | PSNR  | Memory
 ---     | ---       | ---        | ---         | ---      | ---   | ---
-64      | 6         | 400x400    | 64          | 200*200  | - | -
+64      | 6         | 400x400    | 64          | 10*10    | 23.12 | 500MB
+64      | 6         | 400x400    | 64          | 50*50    | 22.22 | 1GB
+64      | 6         | 400x400    | 64          | 100*100  | 21.11 | 3GB
+64      | 6         | 400x400    | 64          | 200*200  | 20.40 | 12GB
 64      | 6         | 400x400    | 64          | 400*400  | 19.33 | 46GB
-64      | 6         | 400x400    | 64          | 600*600  | - | -
+64      | 6         | 400x400    | 64          | 600*600  | -     | OOM
 
 Common Parameters:
 * Epochs = 16
 * LR = 5e-4
 
 Tips
-* Make a reasonable small MLP model. (small dim, reasonal number of layers)
+* Make a reasonable small MLP model. (small dim and number of layers)
+* Increasing number of layers take much longer to train, despite a small improvement in quality.
 * Sampling algorithm makes a big impact. (comes with an increased memory cost)
-* Train with large amount of rays as much as possible. (maximum number of rays that can fit with your GPU)
+* Interestingly, smaller batch size achieves better quality. (but training time will be longer)
 
 
 
